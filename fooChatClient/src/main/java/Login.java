@@ -8,6 +8,8 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 import java.awt.event.ActionListener;
 import java.awt.event.ActionEvent;
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 
 public class Login extends JFrame {
 
@@ -28,7 +30,8 @@ public class Login extends JFrame {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e) {
 			e.printStackTrace();
-		} 
+		}
+
 		setResizable(false);
 		setTitle("fooChat@Login");
 		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -61,6 +64,14 @@ public class Login extends JFrame {
 		txtPort.setColumns(10);
 		txtPort.setBounds(94, 184, 142, 26);
 		contentPane.add(txtPort);
+		txtPort.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					login();
+				}
+			}
+		});
 		
 		lblPort = new JLabel("Port:");
 		lblPort.setBounds(151	, 168, 40, 16);
@@ -76,12 +87,16 @@ public class Login extends JFrame {
 		
 		JButton btnLogin = new JButton("Login");
 		btnLogin.addActionListener(new ActionListener() {
-
 			public void actionPerformed(ActionEvent e) {
-				String name = txtName.getText();
-				String address = txtAddress.getText();
-				int port = Integer.parseInt(txtPort.getText());
-				login(name, address, port);
+				login();
+			}
+		});
+		btnLogin.addKeyListener(new KeyAdapter() {
+			@Override
+			public void keyPressed(KeyEvent e) {
+				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+					login();
+				}
 			}
 		});
 
@@ -89,7 +104,10 @@ public class Login extends JFrame {
 		contentPane.add(btnLogin);
 	}
 	
-	private void login(String name, String address, int port) {
+	private void login() {
+		String name = txtName.getText();
+		String address = txtAddress.getText();
+		int port = Integer.parseInt(txtPort.getText());
 		dispose();
 		new Client(name, address, port);
 	}

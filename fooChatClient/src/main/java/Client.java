@@ -43,9 +43,12 @@ import net.*;
 			console("Connection failed..");
 		}
 		createWindow();
-		console("Connecting : " + address + " to " + port + " port, user: " + name );
+		console("Attempting a connection: " + address + ":" + port + ", user: " + name + "\n" );
+		String connection = name + " connected from " + address + ":" + port;
+		net.send(connection.getBytes() );
+
  	}
- 
+
  	private void createWindow() {
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
@@ -53,7 +56,7 @@ import net.*;
 			e.printStackTrace();
 		} 
 		
-		setTitle("Messenger Client");
+		setTitle("fooChat@Messenger Client");
  		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
  		setSize(880, 550);
  		setLocationRelativeTo(null);
@@ -122,6 +125,7 @@ import net.*;
  		if (message.equals("")) return;
  		message = name + ": " + message;
 		console(message);
+		net.send(message.getBytes());
 		txtMessage.setText("");
  	}
  	
