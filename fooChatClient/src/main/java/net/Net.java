@@ -12,12 +12,17 @@ public class Net {
 	private DatagramSocket socket = null;
 	private InetAddress ip = null;
 	private Thread send;
+
+	private String address,name;
 	private int port;
-	
-	public Net(int port) {
+
+
+	public Net(String name, String address, int port) {
+		this.name = name;
+		this.address = address;
 		this.port = port;
-	}
-	
+    }
+
 	public boolean openConnection(String address) {
 		try {
 			socket = new DatagramSocket();
@@ -31,8 +36,7 @@ public class Net {
 		}
 		return true;
 	}
-	
-	
+
 	public String receive() {
 		byte[] data = new byte[1024];
 		DatagramPacket packet = new DatagramPacket(data, data.length);
@@ -44,8 +48,7 @@ public class Net {
 		String message = new String(packet.getData());
 		return message;
 	}
-	
-	
+
 	public void send(final byte[] data) {
 		send = new Thread(new Runnable() {
 			public void run() {
@@ -59,5 +62,16 @@ public class Net {
 		});
 		send.start();
 	}
-	
+
+    public String getName() {
+        return name;
+    }
+
+    public String getAddress() {
+        return address;
+    }
+
+    public int getPort() {
+        return port;
+    }
 }

@@ -17,37 +17,35 @@ import javax.swing.UIManager;
 import javax.swing.border.EmptyBorder;
 
 import net.*;
- 
+
  public class Client extends JFrame {
  	private static final long serialVersionUID = 1L;
-	
-	private JPanel contentPane;
- 
- 	private String name, address;
- 	private int port;
-	private JTextField txtMessage;
-	private JTextArea history;
- 	private boolean connected = false;
- 	private Net net = null;
- 
- 	
- 	public Client(String name, String address, int port) {
-		this.name = name;
-		this.address = address;
-		this.port = port;
-		net = new Net(port);
-		
-		connected = net.openConnection(address);
-		if (!connected) { 
-			System.out.println("Connection failed.."); 
-			console("Connection failed..");
-		}
-		createWindow();
-		console("Attempting a connection: " + address + ":" + port + ", user: " + name + "\n" );
-		String connection = name + " connected from " + address + ":" + port;
-		net.send(connection.getBytes() );
 
- 	}
+	private JPanel contentPane;
+    private JTextArea history;
+    private JTextField txtMessage;
+
+    private boolean connected = false;
+
+    private Net net = null;
+
+
+ 	public Client(String name, String address, int port) {
+        net = new Net(name, address, port);
+
+        connected = net.openConnection(address);
+        if (!connected) {
+            System.out.println("Connection failed..");
+            console("Connection failed..");
+        }
+        createWindow();
+        console("Attempting a connection: " + address + ":" + port + ", user: " + name + "\n" );
+
+        String connection = "/connect/" + name;
+
+        //sends handshake to the server
+        net.send(connection.getBytes() );
+    }
 
  	private void createWindow() {
 		try {
@@ -123,15 +121,18 @@ import net.*;
  	
  	public void send(String message) {
  		if (message.equals("")) return;
- 		message = name + ": " + message;
+ 		message = net.getName() + ": " + message;
 		console(message);
+		message = "/broadcast/" + message;
+
+		//sends data to the server
 		net.send(message.getBytes());
+
 		txtMessage.setText("");
  	}
- 	
- 	public void console(String message) {
- 		history.setCaretPosition(history.getDocument().getLength());
- 		history.append(message + "\n\r");
- 	}
- 	
+
+    public void console(String message) {
+        history.setCaretPosition(history.getDocument().getLength());
+        history.append(message + "\n\r");
+    }
  }
