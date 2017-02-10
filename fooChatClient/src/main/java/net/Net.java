@@ -15,7 +15,7 @@ public class Net {
 
 	private String address,name;
 	private int port;
-
+	private long id = -1;
 
 	public Net(String name, String address, int port) {
 		this.name = name;
@@ -61,6 +61,19 @@ public class Net {
 			}
 		});
 		send.start();
+	}
+
+	public void close(){
+		synchronized (socket) {
+			socket.close();
+		}
+	}
+
+	public void setId(long id){
+		this.id = id;
+	}
+	public long getId(){
+		return id;
 	}
 
     public String getName() {

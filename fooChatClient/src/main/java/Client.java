@@ -2,10 +2,7 @@ import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.awt.event.KeyAdapter;
-import java.awt.event.KeyEvent;
+import java.awt.event.*;
 
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -18,15 +15,15 @@ import javax.swing.border.EmptyBorder;
 
 import net.*;
 
- public class Client extends JFrame {
+ public class Client extends JFrame implements Runnable {
  	private static final long serialVersionUID = 1L;
 
 	private JPanel contentPane;
     private JTextArea history;
     private JTextField txtMessage;
-
+    private Thread listen, run;
     private boolean connected = false;
-
+    private boolean running = false;
     private Net net = null;
 
 
@@ -45,7 +42,15 @@ import net.*;
 
         //sends handshake to the server
         net.send(connection.getBytes() );
+
+		running = true;
+		run = new Thread(this,"Running");
+		run.start();
     }
+
+     public void run(){
+         listen();
+     }
 
  	private void createWindow() {
 		try {
@@ -114,7 +119,17 @@ import net.*;
 		gbc_btnSend.gridx = 2;
 		gbc_btnSend.gridy = 2;
 		contentPane.add(btnSend, gbc_btnSend);
- 		setVisible(true);
+
+		addWindowListener(new WindowAdapter() {
+			@Override
+			public void windowClosing(WindowEvent e) {
+				String disconnect = "/disconnect/" + net.getId() + "/end/";
+				net.send(disconnect.getBytes());
+				net.close();
+			}
+		});
+
+		setVisible(true);
  		
  		txtMessage.requestFocusInWindow();
  	}
@@ -122,14 +137,35 @@ import net.*;
  	public void send(String message) {
  		if (message.equals("")) return;
  		message = net.getName() + ": " + message;
-		console(message);
-		message = "/broadcast/" + message;
+		message = "/broadcast/" + message + "/end/";
 
 		//sends data to the server
 		net.send(message.getBytes());
 
 		txtMessage.setText("");
  	}
+
+ 	public void listen() {
+        listen = new Thread("Listen") {
+            public void run() {
+                while (running) {
+                    String message = net.receive();
+					if(message.startsWith("/connect/")){
+						long id = Long.parseLong(message.split("/connect/|/end/")[1]);
+						net.setId(id);
+
+                        System.out.println("Successfully connected to server! Id: " + net.getId());
+                        console("Successfully connected to server! Id: " + net.getId());
+                    }else if(message.startsWith("/broadcast/")){
+                    	String text = message.split("/broadcast/|/end/")[1];
+//                    	text += "kon";
+//						System.out.println(text + " kon");
+						console(text);
+					}
+                }
+            }
+        }; listen.start();
+    }
 
     public void console(String message) {
         history.setCaretPosition(history.getDocument().getLength());

@@ -52,13 +52,20 @@ public class Server implements Runnable {
             public void run(){
                 DatagramPacket packet = new DatagramPacket(data, data.length, address, port);
                 try {
+//                    String s = new String (packet.getData());
+//                    System.out.println(s);
                     socket.send(packet);
                 } catch (IOException e) {
-                    System.out.println("Doesnt sent to " + address + ":" + port);
+                    System.out.println("Doesn't sent to " + address + ":" + port);
                 }
             }
         };
         send.start();
+    }
+    private void send (String message, InetAddress address, int port){
+        message +="/end/";
+//        System.out.println("method send, message " + message + " length " + message.length());
+        send(message.getBytes(), address, port);
     }
 
     public void receive(){
@@ -73,8 +80,8 @@ public class Server implements Runnable {
                          e.printStackTrace();
                      }
                      process(packet);
-                     clients.add(new ClientData("Eugene", createId(), packet.getPort(), packet.getAddress()));
-                     System.out.println(clients.get(0).address.toString() + ":" + clients.get(0).port); //do i need it?
+//                     String st = new String(packet.getData());
+//                     System.out.println(st);
                  }
              }
         };
@@ -84,11 +91,17 @@ public class Server implements Runnable {
     private void process(DatagramPacket packet){
         String str = new String(packet.getData());
         if (str.startsWith("/connect/")){
-            clients.add(new ClientData(str.substring(9,str.length()), createId(), packet.getPort(), packet.getAddress()));
-            System.out.println(str.substring(9,str.length())); //?? do i need it?
+            ClientData cd = new ClientData(str.substring(9,str.length()), createId(), packet.getPort(), packet.getAddress());
+//            clients.add(new ClientData(str.substring(9,str.length()), createId(), packet.getPort(), packet.getAddress()));
+            clients.add(cd);
+            System.out.println("New connect from : " + str.substring(9,str.length()) +", address: " +
+                    packet.getAddress() + ":" + packet.getPort()+ ". Identifier: " + idCounter + " id" + cd.getId());
+            String ID = "/connect/"+idCounter;
+//            System.out.println(ID + " length "+ ID.length());
+            send(ID, packet.getAddress(), packet.getPort());
         }else if (str.startsWith("/broadcast/")){
-            String message = str.substring(11,str.length());
-            broadcasting(message);
+            System.out.println("New broadcasting message: " + str + " length " + str.length());
+            broadcasting(str);
         }else {
             System.out.println(str);
         }
@@ -97,11 +110,14 @@ public class Server implements Runnable {
     private void broadcasting(String message){
         for (int i = 0; i < clients.size(); i++) {
             ClientData clientData = clients.get(i);
-            send(message.getBytes(), clientData.address, clientData.port);
+            send(message.getBytes(), clientData.address, clientData.getPort());
+
+            String s = clientData.getName();
+            System.out.println(s + " " + s.length());
         }
     }
 
     private long createId(){
-        return idCounter.getAndIncrement();
+        return idCounter.incrementAndGet();
     }
 }
