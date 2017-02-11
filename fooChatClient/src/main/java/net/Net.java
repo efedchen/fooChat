@@ -64,9 +64,13 @@ public class Net {
 	}
 
 	public void close(){
-		synchronized (socket) {
-			socket.close();
-		}
+		new Thread("Close"){
+			public void run() {
+				synchronized (socket) {
+					socket.close();
+				}
+			}
+		}.start();
 	}
 
 	public void setId(long id){

@@ -95,7 +95,7 @@ import net.*;
 			@Override
 			public void keyPressed(KeyEvent e) {
 				if (e.getKeyCode() == KeyEvent.VK_ENTER) {
-					send(txtMessage.getText());
+					send(txtMessage.getText(),true);
 				}
 			}
 		});
@@ -111,7 +111,7 @@ import net.*;
 		JButton btnSend = new JButton("Send");
 		btnSend.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				send(txtMessage.getText());
+				send(txtMessage.getText(),true);
 			}
 		});
 		GridBagConstraints gbc_btnSend = new GridBagConstraints();
@@ -125,6 +125,8 @@ import net.*;
 			public void windowClosing(WindowEvent e) {
 				String disconnect = "/disconnect/" + net.getId() + "/end/";
 				net.send(disconnect.getBytes());
+				System.out.println("closed");
+				running = false;
 				net.close();
 			}
 		});
@@ -134,10 +136,12 @@ import net.*;
  		txtMessage.requestFocusInWindow();
  	}
  	
- 	public void send(String message) {
+ 	public void send(String message, boolean bool) {
  		if (message.equals("")) return;
- 		message = net.getName() + ": " + message;
-		message = "/broadcast/" + message + "/end/";
+ 		if(bool){
+			message = net.getName() + ": " + message;
+			message = "/broadcast/" + message + "/end/";
+		}
 
 		//sends data to the server
 		net.send(message.getBytes());
@@ -157,10 +161,15 @@ import net.*;
                         System.out.println("Successfully connected to server! Id: " + net.getId());
                         console("Successfully connected to server! Id: " + net.getId());
                     }else if(message.startsWith("/broadcast/")){
-                    	String text = message.split("/broadcast/|/end/")[1];
-//                    	text += "kon";
-//						System.out.println(text + " kon");
+
+						//allows user to send messages that starts with /broadcast/
+						String text = message.substring(11);
+						text = text.split("/end/")[0];
+
 						console(text);
+					} else if(message.startsWith("/ping/")){
+						message = "/ping/"+net.getId()+"/end/";
+						net.send(message.getBytes());
 					}
                 }
             }
