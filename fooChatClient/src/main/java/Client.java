@@ -38,7 +38,7 @@ import net.*;
         createWindow();
         console("Attempting a connection: " + address + ":" + port + ", user: " + name + "\n" );
 
-        String connection = "/connect/" + name;
+        String connection = "/connect/" + name + "/end/";
 
         //sends handshake to the server
         net.send(connection.getBytes() );
