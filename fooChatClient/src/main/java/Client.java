@@ -3,27 +3,26 @@ import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
 import java.awt.event.*;
+import java.util.ArrayList;
 
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-import javax.swing.UIManager;
+import javax.swing.*;
 import javax.swing.border.EmptyBorder;
 
 import net.*;
 
- public class Client extends JFrame implements Runnable {
+import static java.awt.GridBagConstraints.RELATIVE;
+
+public class Client extends JFrame implements Runnable {
  	private static final long serialVersionUID = 1L;
 
 	private JPanel contentPane;
     private JTextArea history;
+    private JTextArea onlineUsersArea;
     private JTextField txtMessage;
     private Thread listen, run;
     private boolean connected = false;
     private boolean running = false;
+    private ArrayList<String> onlineUsers;
     private Net net = null;
 
 
@@ -61,19 +60,15 @@ import net.*;
 		
 		setTitle("fooChat@Messenger Client");
  		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
- 		setSize(880, 550);
+ 		setSize(980, 550);
  		setLocationRelativeTo(null);
 		contentPane = new JPanel();
 		contentPane.setBorder(new EmptyBorder(5, 5, 5, 5));
  		setContentPane(contentPane);
  		
  		GridBagLayout gbl_contentPane = new GridBagLayout();
-		gbl_contentPane.columnWidths = new int[]{16, 857, 7};
-		gbl_contentPane.columnWidths = new int[]{16, 827, 30, 7};
- 		gbl_contentPane.rowHeights = new int[]{35, 475, 40};
-		gbl_contentPane.columnWeights = new double[]{1.0, Double.MIN_VALUE};
-		gbl_contentPane.columnWeights = new double[]{1.0, 1.0};
- 		gbl_contentPane.rowWeights = new double[]{1.0, Double.MIN_VALUE};
+		gbl_contentPane.columnWidths = new int[]{16, 557, 7};
+ 		gbl_contentPane.rowHeights = new int[]{25, 485, 40};
  		contentPane.setLayout(gbl_contentPane);
  		
  		history = new JTextArea();
@@ -87,9 +82,27 @@ import net.*;
  		scrollConstraints.gridy = 0;
 		scrollConstraints.gridwidth = 3;
 		scrollConstraints.gridheight = 2;
-		scrollConstraints.insets = new Insets(0, 7, 0, 0);
+		scrollConstraints.weightx = 1;
+		scrollConstraints.weighty = 1;
+		scrollConstraints.insets = new Insets(0, 5, 0, 0);
  		contentPane.add(scroll, scrollConstraints);
-		
+
+		onlineUsersArea = new JTextArea();
+		onlineUsersArea.setEditable(false);
+		onlineUsersArea.setFont(new Font("Arial", Font.PLAIN, 14));
+		JScrollPane onlineUsersScroll = new JScrollPane(onlineUsersArea);
+		GridBagConstraints onlineUsersScrollConstraints = new GridBagConstraints();
+		onlineUsersScrollConstraints.insets = new Insets(0, 0, 5, 5);
+		onlineUsersScrollConstraints.fill = GridBagConstraints.BOTH;
+		onlineUsersScrollConstraints.gridx = RELATIVE;
+		onlineUsersScrollConstraints.gridy = 0;
+		onlineUsersScrollConstraints.gridwidth = 1;
+		onlineUsersScrollConstraints.gridheight = 4;
+		onlineUsersScrollConstraints.weightx = 1;
+		onlineUsersScrollConstraints.weighty = 1;
+		contentPane.add(onlineUsersScroll, onlineUsersScrollConstraints);
+
+
 		txtMessage = new JTextField();
 		txtMessage.addKeyListener(new KeyAdapter() {
 			@Override
@@ -105,6 +118,7 @@ import net.*;
 		gbc_txtMessage.gridx = 0;
 		gbc_txtMessage.gridy = 2;
 		gbc_txtMessage.gridwidth = 2;
+		gbc_txtMessage.weightx = 1;
 		contentPane.add(txtMessage, gbc_txtMessage);
 		txtMessage.setColumns(10);
 		
@@ -118,6 +132,8 @@ import net.*;
 		gbc_btnSend.insets = new Insets(0, 0, 0, 5);
 		gbc_btnSend.gridx = 2;
 		gbc_btnSend.gridy = 2;
+		gbc_btnSend.weightx = 0;
+		gbc_btnSend.weighty = 0;
 		contentPane.add(btnSend, gbc_btnSend);
 
 		addWindowListener(new WindowAdapter() {
@@ -153,8 +169,10 @@ import net.*;
         listen = new Thread("Listen") {
             public void run() {
                 while (running) {
+                	int k=0;
                     String message = net.receive();
 					if(message.startsWith("/connect/")){
+
 						long id = Long.parseLong(message.split("/connect/|/end/")[1]);
 						net.setId(id);
 
@@ -168,8 +186,12 @@ import net.*;
 
 						console(text);
 					} else if(message.startsWith("/ping/")){
+
 						message = "/ping/"+net.getId()+"/end/";
 						net.send(message.getBytes());
+					} else if(message.startsWith("/onlineU/")){
+						onlineUsers.add(message.split("/onlineU/|/end/")[1]);
+						//TODO: print out online useres
 					}
                 }
             }

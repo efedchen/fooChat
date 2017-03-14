@@ -107,6 +107,7 @@ public class Login extends JFrame {
 	private void login() {
 		String name = txtName.getText();
 		String address = txtAddress.getText();
+		//TODO: invoke error window if the port == ""
 		int port = Integer.parseInt(txtPort.getText());
 		dispose();
 		new Client(name, address, port);
